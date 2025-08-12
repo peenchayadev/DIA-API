@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MealPeriod { 
+  MORNING_BEFORE 
+  MORNING_AFTER 
+  LUNCH_BEFORE 
+  LUNCH_AFTER 
+  DINNER_BEFORE
+  DINNER_AFTER
+  BEDTIME
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  lineUserId    String         @unique
+  glucoseLogs   GlucoseLog[]
+  labResults    LabResult[]
+  appointments  Appointment[]
+  foodAnalyses  FoodAnalysis[]
+  settings      UserSetting?
+}
+
+model Media {
+  id        Int      @id @default(autoincrement())
+  url       String
+  createdAt DateTime @default(now())
+
+  labResult   LabResult?    @relation(fields: [labResultId], references: [id])
+  labResultId Int?          @unique
+
+  appointment   Appointment?  @relation(fields: [appointmentId], references: [id])
+  appointmentId Int?          @unique
+
+  foodAnalysis   FoodAnalysis? @relation(fields: [foodAnalysisId], references: [id])
+  foodAnalysisId Int?          @unique
+}
+
+model GlucoseLog {
+  id         String      @id @default(cuid())
+  userId     Int
+  user       User        @relation(fields: [userId], references: [id])
+  value      Int
+  period     MealPeriod
+  note       String?
+  recordedAt DateTime
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model UserSetting {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id])
+  remindDaily8am Boolean  @default(true)
+  targetMin      Int      @default(80) 
+  targetMax      Int      @default(180)
+}
+
+model LabResult {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  media      Media[]
+  fastingGlucose Float?
+  hba1c          Float?
+  recordDate     DateTime?
+  normalRangeMin    Int?
+  normalRangeMax    Int?
+  fastingGlucoseUnit String?
+  hba1cUnit String?
+}
+
+model Appointment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  media     Media[]
+  appointmentDate DateTime? //วันที่นัด
+  startTime       String?
+  endTime         String?
+  doctorName      String?
+  hospitalName    String?
+  fullName        String?
+  age             String?
+  reason          String?
+  details         String?
+}
+
+model FoodAnalysis {
+  id         Int    @id @default(autoincrement())
+  userId     Int
+  user       User   @relation(fields: [userId], references: [id])
+  media      Media[]
+  foodName   String?
+  carbsGram  Float?
+  sugarGram  Float?
+  advice     String?
+}
