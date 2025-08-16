@@ -1,5 +1,4 @@
 import { Client } from '@line/bot-sdk'
-import axios from 'axios'
 
 export const lineClient = new Client({
 	channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN!

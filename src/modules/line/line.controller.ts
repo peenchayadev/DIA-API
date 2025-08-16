@@ -10,7 +10,7 @@ export const lineRouter = new Elysia({ prefix: '/line' })
       const events = body.events
 
       await Promise.all(
-        events.map(async (event) => {
+        events.map(async (event : any) => {
           await handleLineEvents(event)
         })
       )
