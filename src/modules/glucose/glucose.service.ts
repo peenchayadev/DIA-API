@@ -20,6 +20,13 @@ export interface GlucoseSummary {
   date: string
 }
 
+export interface GlucoseReading {
+  value: number
+  status: GlucoseLevel
+  recordedAt: Date
+  period: MealPeriod
+}
+
 function getGlucoseStatus(value: number, targetMin: number = 80, targetMax: number = 180): GlucoseLevel {
   if (value <= targetMin) {
     return GlucoseLevel.LOW
@@ -97,4 +104,51 @@ export async function getTodayGlucoseSummary(lineUserId: string): Promise<Glucos
     maximum,
     date: today.format('YYYY-MM-DD')
   }
+}
+
+export async function getTodayGlucoseReadings(lineUserId: string): Promise<GlucoseReading[]> {
+  // Get user from database
+  const user = await prisma.user.findUnique({
+    where: { lineUserId },
+    include: {
+      settings: true
+    }
+  })
+
+  if (!user) {
+    throw new Error('User not found')
+  }
+
+  // Get today's date range (00:00 - 23:59)
+  const today = dayjs()
+  const startOfDay = today.startOf('day').toDate()
+  const endOfDay = today.endOf('day').toDate()
+
+  // Get all glucose logs for today
+  const todayLogs = await prisma.glucoseLog.findMany({
+    where: {
+      userId: user.id,
+      recordedAt: {
+        gte: startOfDay,
+        lte: endOfDay
+      }
+    },
+    orderBy: {
+      recordedAt: 'desc'
+    }
+  })
+
+  // Get user's glucose target range
+  const targetMin = user.settings?.targetMin || 80
+  const targetMax = user.settings?.targetMax || 180
+
+  // Format the readings
+  const readings: GlucoseReading[] = todayLogs.map(log => ({
+    value: log.value,
+    status: getGlucoseStatus(log.value, targetMin, targetMax),
+    recordedAt: log.recordedAt,
+    period: log.period
+  }))
+
+  return readings
 }
