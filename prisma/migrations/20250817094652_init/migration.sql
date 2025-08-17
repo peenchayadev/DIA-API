@@ -56,6 +56,10 @@ CREATE TABLE "public"."LabResult" (
     "fastingGlucose" DOUBLE PRECISION,
     "hba1c" DOUBLE PRECISION,
     "recordDate" TIMESTAMP(3),
+    "normalRangeMin" INTEGER,
+    "normalRangeMax" INTEGER,
+    "fastingGlucoseUnit" TEXT,
+    "hba1cUnit" TEXT,
 
     CONSTRAINT "LabResult_pkey" PRIMARY KEY ("id")
 );
@@ -66,8 +70,13 @@ CREATE TABLE "public"."Appointment" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" INTEGER NOT NULL,
     "appointmentDate" TIMESTAMP(3),
+    "startTime" TEXT,
+    "endTime" TEXT,
     "doctorName" TEXT,
-    "address" TEXT,
+    "hospitalName" TEXT,
+    "fullName" TEXT,
+    "age" TEXT,
+    "reason" TEXT,
     "details" TEXT,
 
     CONSTRAINT "Appointment_pkey" PRIMARY KEY ("id")

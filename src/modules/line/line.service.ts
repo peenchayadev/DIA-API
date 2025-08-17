@@ -60,6 +60,8 @@ export async function handleLineEvents(event: WebhookEvent) {
 	if (!('replyToken' in event) || !event.source?.userId) return null
 	if (event.type !== 'message') return null
 
+	console.log('Received message event:', event)
+
 	const lineUserId = event.source.userId
 	const replyToken = event.replyToken
 
